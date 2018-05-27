@@ -25,8 +25,8 @@ resource "aws_launch_configuration" "default" {
 
 resource "aws_autoscaling_group" "default" {
   launch_configuration = "${aws_launch_configuration.default.name}"
-  max_size = 5
-  min_size = 5
+  max_size = 8
+  min_size = 8
 
   availability_zones = [
     "us-east-1a",
@@ -42,14 +42,14 @@ resource "aws_autoscaling_group" "default" {
 
   tag {
     key = "Name"
-    propagate_at_launch = false
+    propagate_at_launch = true
     value = "hello-ssm"
   }
 }
 
 
-resource "aws_ssm_document" "foo" {
-  name          = "test_document"
+resource "aws_ssm_document" "ifconfig" {
+  name          = "ifconfig"
   document_type = "Command"
 
   content = <<DOC
@@ -73,3 +73,38 @@ resource "aws_ssm_document" "foo" {
 DOC
 }
 
+resource "aws_ssm_document" "process_count" {
+  name          = "process_count"
+  document_type = "Command"
+  document_format="YAML"
+
+  content = <<DOC
+---
+schemaVersion: '2.2'
+description: Sample document
+mainSteps:
+- action: aws:runShellScript
+  name: runShellScript
+  inputs:
+    runCommand:
+    - ps auxww | wc -l
+DOC
+}
+
+resource "aws_ssm_document" "uptime" {
+  name          = "uptime"
+  document_type = "Command"
+  document_format="YAML"
+
+  content = <<DOC
+---
+schemaVersion: '2.2'
+description: Sample document
+mainSteps:
+- action: aws:runShellScript
+  name: runShellScript
+  inputs:
+    runCommand:
+    - uptime
+DOC
+}
